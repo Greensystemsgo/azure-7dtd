@@ -155,6 +155,23 @@ resource "azurerm_linux_virtual_machine" "rtwl_7dtd_vm" {
         public_key     = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQD9NFoelZ8RzKcTzmMlyYhWm9q6VyazMO5CZGumHsiVR35oUrrkPcD/EChgDAs8y4W/FEadLSSTF2QZqnCKppGaxGaBG7/VX3vroa5Nf2k5kwNAkPK1m3UcSUd3dAybWiMTnj+lPLM8AFF+9iEk4o67wMnH2sphSdBvOFf9GFzzywp8rcgcMkfObPe/p5OPM/b32Vn0ku2fAseei3pinKZMkXjC5Wr2QHgnetdgj+CDid5uYv4GrwIFHWPOboxrdc/b8AsQubncfYZFhWzJeVNKtXx1NMbFVEVqU8y/qSDGT/wuP5SBcc1p+yEWuBzNsHZsgEMsu4sUgRYrI5H5mbGeFRAEzrBhiaun0HwUj05CkD6VqErWCm3VivQ1/wm0k6gS6D9qj6SC/f5cPDbsMYaMVA2Ph7OnlwgjP1sYFgOC6FCq9EV6GzWKXIGHx51JD5L0YPRuT49tASHMTR4HbaIy6Jw7O1KNyBmcpsgNgPtQNY7HQ9PRsqtGGOkwa8YvP16RgN8Z8/a7UQU/X2up1Zx1Ahw10F9aptpEi84OwRRUYoeZ2zJd6vxW666BnqcPeIDQwBUF0uPS1LAydcTqEKTSeeUv4gUJSmnTYfveTMSl60YCjCbYzxGnEZB9GjEq1QLXdff9i2qepRHHZBOUCBRK0DyEixY1G50SFxPjpoV26Q=="
     }
 
+    connection {
+        host = "rtwl_7dtd_publicip"
+        type = "ssh"
+        user = "cnorris"
+        # private_key = "${file("~/.ssh/cnorrisatazure_rsa")}"
+    }
+
+    provisioner "remote-exec" {      
+        inline = [
+            "sudo dnf install python python2 python2-dnf libselinux-python -y"
+        ]
+     }
+
+     provisioner "local-exec" {
+         command = "sleep 120 & ansible-playbook -i ${azurerm_public_ip.rtwl_7dtd_publicip}, ./ansible-7days/install/7days.yml"
+    }
+
     boot_diagnostics {
         storage_account_uri = azurerm_storage_account.rtwl_7dtd_storageaccount.primary_blob_endpoint
     }
