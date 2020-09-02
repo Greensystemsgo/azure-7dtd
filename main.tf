@@ -156,7 +156,7 @@ resource "azurerm_linux_virtual_machine" "rtwl_7dtd_vm" {
     }
 
     connection {
-        host = "rtwl_7dtd_publicip"
+        host =  self.public_ip_address
         type = "ssh"
         user = "cnorris"
         # private_key = "${file("~/.ssh/cnorrisatazure_rsa")}"
@@ -164,12 +164,14 @@ resource "azurerm_linux_virtual_machine" "rtwl_7dtd_vm" {
 
     provisioner "remote-exec" {      
         inline = [
-            "sudo dnf install python python2 python2-dnf libselinux-python -y"
+            "sudo yum install python python2 python2-dnf libselinux-python epel-release -y",
+            "sudo yum install ansible -y"
         ]
      }
 
      provisioner "local-exec" {
-         command = "sleep 120 & ansible-playbook -i ${azurerm_public_ip.rtwl_7dtd_publicip}, ./ansible-7days/install/7days.yml"
+         working_dir = "./ansible-7days/install/"
+         command = "ansible-playbook 7days.yml -i ${self.public_ip_address}"
     }
 
     boot_diagnostics {
